@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 
+#include <iostream>
 #include <fstream>
 #include <sstream>
 
@@ -31,59 +32,66 @@ DemoGame::DemoGame(ample::window::Window &window)
     : ample::graphics::LayeredWindowActivity(window)
 {
     worldLayer.setContactListener(listener);
-    /*ground = &worldLayer.addWorldObject((std::vector<ample::graphics::Vector2d<float>>){
-                                                                 {-70, -65.0},
-                                                                 {-70, -25.0},
-                                                                 {70, -60.0},
-                                                                 {70, -70.0}}, {0, 0});
-*/
+    ground = &worldLayer.addWorldObject((std::vector<ample::graphics::Vector2d<float>>){
+                                            {-70, -65.0},
+                                            {-70, -25.0},
+                                            {70, -60.0},
+                                            {70, -70.0}},
+                                        {0, 0});
     brick1 = &worldLayer.addWorldObject(ample::geometry::RegularPolygon<float>(7.0, 30),
-                                        {0, -40}, ample::physics::BodyType::DYNAMIC_BODY);
+                                        {0, -25}, ample::physics::BodyType::DYNAMIC_BODY);
     brick2 = &worldLayer.addWorldObject(ample::geometry::RegularPolygon<float>(7.0, 30),
-                                        {0, -80});
-    ground2 = &worldLayer.addWorldObject(ample::geometry::RegularPolygon<float>(7.0, 30),
-                                        {80, -80});
-    brick3 = &worldLayer.addWorldObject(ample::geometry::RegularPolygon<float>(7.0, 30),
-                                        {0, 0}, ample::physics::BodyType::DYNAMIC_BODY);
-    brick1->setAwake(false);
-    brick2->setAwake(false);
+                                        {0, 50});
+    //ground2 = &worldLayer.addWorldObject(ample::geometry::RegularPolygon<float>(7.0, 30),
+    //                                    {80, -80});
+    brick3 = &worldLayer.addWorldObject((std::vector<ample::graphics::Vector2d<float>>){{-7, -7},
+                                                                                        {-7, 7},
+                                                                                        {7, 7},
+                                                                                        {7, -7}},
+                                        {-10, -30}, ample::physics::BodyType::DYNAMIC_BODY);
+    // brick1->setAwake(false);
+    //brick2->setAwake(false);
     auto &brick1Fixture = brick1->addFixture(ample::geometry::RegularPolygon<float>(7.0, 7));
-    /*auto& groundFixture = ground->addFixture({{-70, -65.0},
-                                             {-70, -25.0},
-                                             {70, -60.0},
-                                             {70, -70.0}});*/
+    auto &groundFixture = ground->addFixture({{-70, -65.0},
+                                              {-70, -25.0},
+                                              {70, -60.0},
+                                              {70, -70.0}});
     auto &brick2Fixture = brick2->addFixture(ample::geometry::RegularPolygon<float>(7.0, 7));
-    auto &brick3Fixture = brick3->addFixture(ample::geometry::RegularPolygon<float>(7.0, 7));
-    auto &ground2Fixture = brick3->addFixture(ample::geometry::RegularPolygon<float>(7.0, 7));
+    auto &brick3Fixture = brick3->addFixture((std::vector<ample::graphics::Vector2d<float>>){{-7, -7},
+                                                                                             {-7, 7},
+                                                                                             {7, 7},
+                                                                                             {7, -7}});
+    //auto &ground2Fixture = brick3->addFixture(ample::geometry::RegularPolygon<float>(7.0, 7));
     //auto brickFixture2 = brick->addFixture({{0, 0}, {10.0, 0}, {10.0, -2.0}, {0.0, -2.0}});
-    //groundFixture.setDensity(1.0f);
-    //groundFixture.setFriction(0.2f);
+    groundFixture.setDensity(1.0f);
+    groundFixture.setFriction(0.2f);
     //brick->setAwake(true);
     brick1Fixture.setDensity(1.0);
     brick1Fixture.setFriction(1.0);
-    ground2Fixture.setDensity(1.0);
-    ground2Fixture.setFriction(1.0);
+    //ground2Fixture.setDensity(1.0);
+    //ground2Fixture.setFriction(1.0);
     brick3Fixture.setDensity(1.0);
     brick3Fixture.setFriction(1.0);
-    brick2Fixture.setDensity(1.0);
+    brick2Fixture.setDensity(0.0);
     brick2Fixture.setFriction(1.0);
     ample::physics::WorldDistanceJoint2d &q = dynamic_cast<ample::physics::WorldDistanceJoint2d &>(
-                        worldLayer.addWorldDistanceJoint(*brick1, *brick2, 
-                        brick1->getWorldCenter(), brick2->getWorldCenter()));
-    ample::physics::WorldDistanceJoint2d &q2 = dynamic_cast<ample::physics::WorldDistanceJoint2d &>(
+        worldLayer.addWorldDistanceJoint(*brick1, *brick2,
+                                         brick1->getWorldCenter(), brick2->getWorldCenter()));
+    /*ample::physics::WorldDistanceJoint2d &q2 = dynamic_cast<ample::physics::WorldDistanceJoint2d &>(
                         worldLayer.addWorldDistanceJoint(*brick1, *brick3, 
                         brick1->getWorldCenter(), brick3->getWorldCenter()));
     ample::physics::WorldDistanceJoint2d &q3 = dynamic_cast<ample::physics::WorldDistanceJoint2d &>(
                         worldLayer.addWorldDistanceJoint(*ground2, *brick3, 
-                        ground2->getWorldCenter(), brick3->getWorldCenter()));
+                        ground2->getWorldCenter(), brick3->getWorldCenter()));*/
     //brickFixture2.setDensity(1.0);
     //brickFixture2.setFriction(1.0);
     worldLayer.addCamera(camera);
     addLayer(worldLayer);
     ample::physics::MassData d;
-    d = brick1->getMassData();
-    d.I = 1;
-    brick1->setMassData(d);
+    d = brick3->getMassData();
+    d.I = 5;
+    d.mass = 10;
+    brick3->setMassData(d);
     //ground->setFaceColor256({20, 100, 70});
     // brick1->setFaceColor256(0x964B00);
     // q.setFaceColor256(0xff69b4);
@@ -101,13 +109,36 @@ DemoGame::DemoGame(ample::window::Window &window)
 void DemoGame::onActive()
 {
     LayeredWindowActivity::onActive();
+
     if (eventManager->keyboard()->isKeyDown(ample::control::keysym::KEY_g))
     {
-        brick1->applyForceToCenter({0, -100000}, true);
+        //brick3->applyLinearImpulseToCenter({-20, 0}, true);
+        auto vel = brick3->getLinearVelocity();
+        float desiredVel = -50;
+        float velChange = desiredVel - vel.x;
+        float force = brick3->getMass() * velChange / (1 / 60.0); //f = mv/t
+        std::cout << force << std::endl;
+        brick3->applyForceToCenter(ample::graphics::Vector2d<float>{force, 0}, true);
     }
     if (eventManager->keyboard()->isKeyDown(ample::control::keysym::KEY_f))
     {
-        brick1->applyForceToCenter({-100, 0}, true);
+        //brick3->applyLinearImpulseTo/brick3->applyLinearImpulseToCenter({0, 200}, true);Center({20, 0}, true);
+        auto vel = brick3->getLinearVelocity();
+        float desiredVel = 50;
+        float velChange = desiredVel - vel.x;
+        float force = brick3->getMass() * velChange / (1 / 60.0); //f = mv/t
+        std::cout << force << std::endl;
+        brick3->applyForceToCenter(ample::graphics::Vector2d<float>{force, 0}, true);
+    }
+    if (eventManager->keyboard()->isKeyDown(ample::control::keysym::KEY_t))
+    {
+        //brick3->applyLinearImpulseTo/brick3->applyLinearImpulseToCenter({0, 200}, true);Center({20, 0}, true);
+        auto vel = brick3->getLinearVelocity();
+        float desiredVel = 50;
+        float velChange = desiredVel - vel.y;
+        float force = brick3->getMass() * velChange / (1 / 60.0); //f = mv/t
+        std::cout << force << std::endl;
+        brick3->applyForceToCenter(ample::graphics::Vector2d<float>{0, force}, true);
     }
     if (eventManager->keyboard()->isKeyDown(ample::control::keysym::KEY_r))
     {
